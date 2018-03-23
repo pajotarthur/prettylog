@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Coucou</title>
+
+	<link rel="stylesheet" type="text/css" href="    https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.1.0/material.min.css">
+{#	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/dataTables.material.min.css">#}
+	<style type="text/css" class="init">
+
+	</style>
+	<script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-1.12.4.js"></script>
+
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+{#	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.16/js/dataTables.material.min.js"></script>#}
+
+
+
+
+
+    <script src="static/js/angular.js"></script>
+
+
+
+    <script>
+        angular.module('myApp', [])
+            .controller('HomeCtrl', function($scope, $http) {
+			
+				$scope.info = {};
+				
+				$scope.showAdd = true;
+			
+				$scope.showlist = function(){
+					$http({
+						method: 'POST',
+						url: '/getExpeList',
+
+					}).then(function(response) {
+
+
+						$scope.runs = response.data;
+						console.log('mm',$scope.runs);
+						document.getElementById('tablePrint').innerHTML = $scope.runs;
+
+
+                        var table = $('#example').DataTable({
+                            initComplete: function () {
+                                this.api().columns().every(function () {
+                                    var column = this;
+                                    var select = $('<select><option value=""></option></select>')
+                                        .appendTo($(column.footer()).empty())
+                                        .on('change', function () {
+                                            var val = $.fn.dataTable.util.escapeRegex(
+                                                $(this).val()
+                                            );
+
+                                            column
+                                                .search(val ? '^' + val + '$' : '', true, false)
+                                                .draw();
+                                        });
+
+                                    column.data().unique().sort().each(function (d, j) {
+                                        select.append('<option value="' + d + '">' + d + '</option>')
+                                    });
+                                });
+                            },
+                            "columnDefs": [{
+                                "targets": 0,
+                                "searchable": false
+                            }
+                            ],
+                            "scrollX": true,
+                            "paging": false
+
+
+
+                        });
+
+                        $('#example tbody')
+                            .on( 'mouseenter', 'td', function () {
+                                var colIdx = table.cell(this).index().column;
+
+                                $( table.cells().nodes() ).removeClass( 'highlight' );
+                                $( table.column( colIdx ).nodes() ).addClass( 'highlight' );
+                            } );
+
+
+                        $('#example tbody').on( 'click', 'tr', function () {
+                                $(this).toggleClass('selected');
+                        } );
+
+
+                        $('a.toggle-vis').on( 'click', function (e) {
+
+                        e.preventDefault();
+                        // Get the column API object
+                        var column = table.column( $(this).attr('data-column') );
+
+                        // Toggle the visibility
+                        column.visible( ! column.visible() );
+                    } );
+
+
+
+
+					}, function(error) {
+						console.log(error);
+					});
+
+				}
+
+
+
+
+				
+				$scope.showlist();
+            })
+    </script>
+
+
+</head>
+
+<body>
+
+<div data-ng-controller="HomeCtrl" data-ng-init="init()">
+
+
+    <div class="container">
+            <h3 class="text-muted">Data manager</h3>
+    </div>
+
+				<div>
+					Toggle column:
+				</div>
+
+    <div id="tablePrint"> </div>
+
+    </div>
+
+</body>
+
+</html>
